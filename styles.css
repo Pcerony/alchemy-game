@@ -240,9 +240,10 @@ h1 {
 }
 
 .game-screen {
+  height: calc(100dvh - 20px);
   min-height: calc(100dvh - 20px);
   display: grid;
-  grid-template-rows: auto auto auto 1fr auto;
+  grid-template-rows: auto auto auto 1fr;
   gap: 7px;
 }
 
@@ -400,6 +401,26 @@ h1 {
   font-size: 0.82rem;
 }
 
+.material-chip {
+  display: inline-flex;
+  max-width: 100%;
+  margin: 0 8px 6px 0;
+  padding: 4px 8px;
+  border-radius: 99px;
+  color: #25503c;
+  background: #dcf9e8;
+  font-size: 0.75rem !important;
+  font-weight: 900;
+  vertical-align: middle;
+}
+
+.material-chip strong {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .hint-toggle {
   min-height: 28px;
   border-radius: var(--radius);
@@ -417,17 +438,18 @@ h1 {
 
 .lab-board {
   display: grid;
-  grid-template-rows: 1fr auto;
+  grid-template-rows: auto auto 1fr;
   gap: 8px;
   min-height: 0;
 }
 
 .tube-zone {
-  min-height: 248px;
+  min-height: 0;
   border-radius: var(--radius);
   position: relative;
   display: grid;
   place-items: center;
+  align-self: stretch;
   overflow: hidden;
   background:
     linear-gradient(transparent 31px, rgba(36, 48, 71, 0.055) 32px),
@@ -442,6 +464,7 @@ h1 {
 }
 
 .reaction-label {
+  display: none;
   position: absolute;
   left: 12px;
   top: 12px;
@@ -454,27 +477,12 @@ h1 {
   font-weight: 900;
 }
 
-.drop-help {
-  position: absolute;
-  left: 50%;
-  bottom: 10px;
-  transform: translateX(-50%);
-  width: max-content;
-  max-width: calc(100% - 22px);
-  color: #667085;
-  font-size: 0.78rem;
-  font-weight: 800;
-  background: rgba(255, 255, 255, 0.72);
-  padding: 6px 10px;
-  border-radius: 99px;
-}
-
 .test-tube {
-  width: min(39vw, 152px);
-  height: min(58vw, 238px);
-  max-height: 252px;
-  min-width: 124px;
-  min-height: 205px;
+  width: min(68vw, 250px);
+  height: min(86vw, calc(100% - 28px));
+  max-height: 410px;
+  min-width: 180px;
+  min-height: 292px;
   position: relative;
   transform-origin: 50% 12%;
   --react-p: 0;
@@ -528,7 +536,7 @@ h1 {
 }
 
 .reaction-active .tube-content {
-  opacity: 0.16;
+  opacity: 0;
 }
 
 .tube-item {
@@ -625,7 +633,7 @@ h1 {
 }
 
 .choice-card {
-  min-height: 72px;
+  min-height: 58px;
   display: grid;
   grid-template-columns: 48px 1fr;
   grid-template-rows: none;
@@ -835,7 +843,7 @@ h1 {
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  align-items: end;
+  align-items: center;
 }
 
 .shake-copy p {
@@ -901,6 +909,8 @@ h1 {
   position: absolute;
   left: 0;
   top: 0;
+  right: auto;
+  bottom: auto;
   display: block;
   transform-origin: 50% 50%;
   will-change: transform;
@@ -1302,18 +1312,18 @@ h1 {
   }
 
   .tube-zone {
-    min-height: 218px;
+    min-height: 0;
   }
 
   .test-tube {
-    width: 124px;
-    height: 202px;
-    min-width: 118px;
-    min-height: 190px;
+    width: min(66vw, 230px);
+    height: min(82vw, calc(100% - 22px));
+    min-width: 176px;
+    min-height: 276px;
   }
 
   .choice-card {
-    min-height: 62px;
+    min-height: 54px;
   }
 
   .speech-bubble .goal {

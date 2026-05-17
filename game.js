@@ -130,6 +130,7 @@ const stageTitle = document.getElementById("stageTitle");
 const stageGoal = document.getElementById("stageGoal");
 const stageHint = document.getElementById("stageHint");
 const hintToggle = document.getElementById("hintToggle");
+const currentMaterial = document.getElementById("currentMaterial");
 const doctorAvatar = document.getElementById("doctorAvatar");
 const choices = document.getElementById("choices");
 const tubeDropZone = document.getElementById("tubeDropZone");
@@ -139,7 +140,6 @@ const tubeContent = document.getElementById("tubeContent");
 const physicsLayer = document.getElementById("physicsLayer");
 const tubeParticles = document.getElementById("tubeParticles");
 const tubeLabel = document.getElementById("tubeLabel");
-const dropHelp = document.getElementById("dropHelp");
 const shakePanel = document.getElementById("shakePanel");
 const shakeInstruction = document.getElementById("shakeInstruction");
 const shakeMode = document.getElementById("shakeMode");
@@ -167,7 +167,8 @@ const state = {
   audioContext: null,
   motionListening: false,
   lastFeedback: 0,
-  lastSound: 0
+  lastSound: 0,
+  shakeDirection: 1
 };
 
 function setView(view) {
@@ -216,7 +217,7 @@ function renderStage() {
   hintToggle.setAttribute("aria-expanded", "false");
   hintToggle.textContent = "ヒントを見る";
   tubeLabel.textContent = stage.initial;
-  dropHelp.textContent = "えらんだアイテムを試験管へ";
+  currentMaterial.textContent = stage.initial;
   renderProgress();
   renderTubeItem(stage.itemClass);
   renderParticles();
@@ -317,7 +318,6 @@ function handleChoice(choice) {
   state.selectedCorrect = true;
   [...choices.children].forEach((card) => card.setAttribute("aria-disabled", "true"));
   tubeDropZone.classList.add("is-ready");
-  dropHelp.textContent = "よし、反応スタート！";
   startReaction();
 }
 
@@ -340,7 +340,6 @@ function addProgress(amount) {
   if (!state.selectedCorrect) return;
   state.reactionProgress = Math.min(100, state.reactionProgress + amount);
   shakeFill.style.width = `${state.reactionProgress}%`;
-  state.impulse += 6 + amount * 0.55;
   updateReactionLook(state.reactionProgress);
   if (state.reactionProgress >= 100) finishReaction();
 }
@@ -348,9 +347,24 @@ function addProgress(amount) {
 function manualShake() {
   if (!state.selectedCorrect) return;
   unlockAudio();
-  state.gravityX += (Math.random() - 0.5) * 1.9;
-  addProgress(11);
+  shakeBurst(18, Math.random() > 0.5 ? 1 : -1);
+  addProgress(10);
   feedback("shake");
+}
+
+function shakeBurst(power, direction) {
+  const burst = Math.max(5, power);
+  state.shakeDirection = direction || state.shakeDirection * -1;
+  state.impulse = Math.max(state.impulse, burst);
+  state.gravityX += state.shakeDirection * burst * 0.08;
+  state.bodies.forEach((body, index) => {
+    const subjectScale = body.kind === "subject" ? 0.58 : 1;
+    const side = state.shakeDirection * (4.2 + Math.random() * 5.2) * subjectScale;
+    const lift = (11 + Math.random() * 10 + Math.min(10, burst * 0.45)) * subjectScale;
+    body.vx += side + Math.sin(index * 1.7) * 1.8;
+    body.vy -= lift;
+    body.hit = 2;
+  });
 }
 
 function finishReaction() {
@@ -362,7 +376,7 @@ function finishReaction() {
   shakePanel.hidden = true;
   tubeDropZone.classList.remove("is-ready");
   tubeLabel.textContent = stage.result;
-  dropHelp.textContent = "反応せいこう";
+  currentMaterial.textContent = stage.result;
   renderTubeItem(stage.resultClass);
   playTone("success");
   buzz([35, 30, 55]);
@@ -438,23 +452,27 @@ function createPhysicsBodies(stage) {
   const bounds = testTube.getBoundingClientRect();
   const width = Math.max(110, bounds.width - 36);
   const height = Math.max(190, bounds.height - 54);
+  const subjectSize = subjectDimensions(stage.itemClass);
   const subject = makeBody({
     kind: "subject",
     className: stage.itemClass,
-    size: 46,
+    width: subjectSize.width,
+    height: subjectSize.height,
     x: width * 0.5,
-    y: height * 0.58,
-    fixed: true
+    y: height - subjectSize.height / 2,
+    mass: 2.2
   });
   const tools = Array.from({ length: stage.toolCount }, (_, index) => {
+    const toolSize = stage.toolClass === "icon-ball" ? 28 : 34;
     return makeBody({
       kind: "tool",
       className: stage.toolClass,
-      size: stage.toolClass === "icon-ball" ? 28 : 34,
+      width: toolSize,
+      height: toolSize,
       x: 24 + Math.random() * (width - 48),
-      y: 18 + Math.random() * (height * 0.45),
-      vx: (Math.random() - 0.5) * 6,
-      vy: (Math.random() - 0.5) * 5,
+      y: height - toolSize / 2,
+      vx: 0,
+      vy: 0,
       phase: index * 0.7
     });
   });
@@ -462,16 +480,24 @@ function createPhysicsBodies(stage) {
   state.bodies.forEach((body) => physicsLayer.appendChild(body.el));
 }
 
-function makeBody({ kind, className, size, x, y, vx = 0, vy = 0, fixed = false, phase = 0 }) {
+function subjectDimensions(className) {
+  if (className === "phone-item") return { width: 54, height: 86 };
+  if (className === "board-item") return { width: 76, height: 56 };
+  if (className === "solution-item") return { width: 62, height: 62 };
+  if (className === "gold-item") return { width: 58, height: 44 };
+  return { width: 70, height: 42 };
+}
+
+function makeBody({ kind, className, width, height, x, y, vx = 0, vy = 0, mass = 1, phase = 0 }) {
   const el = document.createElement("span");
   el.className = kind === "subject" ? `physics-body physics-subject ${className}` : `physics-body physics-tool ${className}`;
   if (kind === "tool") {
     el.classList.add(toolShapeClass(className));
     el.innerHTML = toolMarkup(className);
   }
-  el.style.width = `${size}px`;
-  el.style.height = `${size}px`;
-  return { el, className, size, x, y, vx, vy, fixed, phase, hit: 0 };
+  el.style.width = `${width}px`;
+  el.style.height = `${height}px`;
+  return { el, kind, className, width, height, radius: Math.max(width, height) / 2, x, y, vx, vy, mass, phase, hit: 0 };
 }
 
 function toolShapeClass(className) {
@@ -513,49 +539,64 @@ function stepPhysics() {
   if (!subject) return;
 
   const shake = Math.min(12, state.impulse);
-  state.impulse *= 0.86;
-  state.gravityX = state.gravityX * 0.85 + (Math.random() - 0.5) * shake * 0.18;
+  state.impulse *= 0.92;
+  state.gravityX *= 0.82;
+  const active = shake > 0.45;
 
   state.bodies.forEach((body, index) => {
-    if (body.fixed) {
-      body.x = width * 0.5 + Math.sin(Date.now() / 230 + body.phase) * shake * 0.22;
-      body.y = height * 0.58;
-    } else {
-      body.vx += state.gravityX + (Math.random() - 0.5) * shake * 0.22;
-      body.vy += 0.32 + (Math.random() - 0.5) * shake * 0.16;
-      body.x += body.vx;
-      body.y += body.vy;
+    const massDrag = body.kind === "subject" ? 0.72 : 1;
+    if (active) {
+      body.vx += (state.gravityX + (Math.random() - 0.5) * shake * 0.24) / body.mass;
+      body.vy += ((Math.random() - 0.5) * shake * 0.12) / body.mass;
+    }
+    body.vy += 0.34;
+    body.x += body.vx;
+    body.y += body.vy;
 
-      const radius = body.size / 2;
-      if (body.x < radius) {
-        body.x = radius;
-        body.vx = Math.abs(body.vx) * 0.78;
+    const radius = body.radius;
+    if (body.x < radius) {
+      body.x = radius;
+      body.vx = Math.abs(body.vx) * 0.78;
+    }
+    if (body.x > width - radius) {
+      body.x = width - radius;
+      body.vx = -Math.abs(body.vx) * 0.78;
+    }
+    if (body.y < radius) {
+      body.y = radius;
+      body.vy = Math.abs(body.vy) * 0.76;
+    }
+    if (body.y > height - radius) {
+      body.y = height - radius;
+      if (active && Math.abs(body.vy) > 1.3) {
+        body.vy = -Math.abs(body.vy) * 0.68;
+      } else {
+        body.vy = 0;
       }
-      if (body.x > width - radius) {
-        body.x = width - radius;
-        body.vx = -Math.abs(body.vx) * 0.78;
-      }
-      if (body.y < radius) {
-        body.y = radius;
-        body.vy = Math.abs(body.vy) * 0.76;
-      }
-      if (body.y > height - radius) {
-        body.y = height - radius;
-        body.vy = -Math.abs(body.vy) * 0.74;
-        body.vx *= 0.94;
-      }
+      body.vx *= active ? 0.88 : 0.72;
+    }
+    if (!active) {
+      body.vx *= 0.92 * massDrag;
+      body.vy *= 0.96;
+    }
 
+    if (body.kind !== "subject" && active) {
       const dx = body.x - subject.x;
       const dy = body.y - subject.y;
       const distance = Math.hypot(dx, dy);
-      const hitDistance = body.size * 0.48 + subject.size * 0.46;
+      const hitDistance = body.radius * 0.62 + subject.radius * 0.62;
       if (distance < hitDistance) {
         const nx = dx / (distance || 1);
         const ny = dy / (distance || 1);
-        body.x = subject.x + nx * hitDistance;
-        body.y = subject.y + ny * hitDistance;
-        body.vx = nx * (4 + shake * 0.18);
-        body.vy = ny * (4 + shake * 0.18);
+        const push = (hitDistance - distance) * 0.5;
+        body.x += nx * push;
+        body.y += ny * push;
+        subject.x -= nx * push * 0.28;
+        subject.y -= ny * push * 0.28;
+        body.vx = nx * (4.4 + shake * 0.24);
+        body.vy = ny * (4.4 + shake * 0.24);
+        subject.vx -= nx * (1.3 + shake * 0.08);
+        subject.vy -= ny * (1.3 + shake * 0.08);
         body.hit = 5;
         subject.hit = 4;
         feedback("hit");
@@ -563,8 +604,8 @@ function stepPhysics() {
       }
     }
 
-    const spin = body.fixed ? 0 : body.vx * 8 + body.vy * 2 + index * 11;
-    body.el.style.transform = `translate(${body.x - body.size / 2}px, ${body.y - body.size / 2}px) rotate(${spin}deg)`;
+    const spin = body.vx * (body.kind === "subject" ? 2.6 : 8) + body.vy * 2 + index * 11;
+    body.el.style.transform = `translate(${body.x - body.width / 2}px, ${body.y - body.height / 2}px) rotate(${spin}deg)`;
     body.el.classList.toggle("is-hit", body.hit > 0);
     if (body.hit > 0) body.hit -= 1;
   });
@@ -585,7 +626,7 @@ function handleMotion(event) {
   const power = Math.abs(acc.x || 0) + Math.abs(acc.y || 0) + Math.abs(acc.z || 0);
   if (power > 22) {
     state.lastMotion = now;
-    state.gravityX += (acc.x || 0) * 0.04;
+    shakeBurst(Math.min(16, power - 10), (acc.x || state.shakeDirection) >= 0 ? 1 : -1);
     addProgress(Math.min(13, (power - 18) * 0.65));
     feedback("shake");
   }
@@ -640,26 +681,44 @@ function playTone(type) {
   const ctx = state.audioContext;
   if (!ctx) return;
   const now = ctx.currentTime;
+  if (type === "shake") {
+    [0, 0.045, 0.09].forEach((offset, index) => {
+      scheduleTone(ctx, now + offset, 280 + index * 85 + Math.random() * 35, 0.04, "triangle", 0.025);
+    });
+    return;
+  }
+  if (type === "hit") {
+    scheduleTone(ctx, now, 520 + Math.random() * 180, 0.035, "square", 0.018, 260);
+    scheduleTone(ctx, now + 0.018, 980 + Math.random() * 260, 0.045, "sine", 0.02, 620);
+    return;
+  }
+  if (type === "success") {
+    [523, 659, 784, 1046].forEach((freq, index) => {
+      scheduleTone(ctx, now + index * 0.065, freq, 0.12, "sine", 0.035);
+    });
+    return;
+  }
+  if (type === "wrong") {
+    scheduleTone(ctx, now, 180, 0.14, "sawtooth", 0.026, 90);
+    scheduleTone(ctx, now + 0.08, 110, 0.11, "triangle", 0.018, 70);
+    return;
+  }
+  scheduleTone(ctx, now, 440, 0.05, "sine", 0.03, 660);
+}
+
+function scheduleTone(ctx, start, freq, duration, wave, volume, endFreq) {
   const osc = ctx.createOscillator();
   const gain = ctx.createGain();
-  const tones = {
-    start: [440, 0.055, "sine", 0.035],
-    shake: [260 + Math.random() * 90, 0.045, "triangle", 0.022],
-    hit: [150 + Math.random() * 70, 0.035, "square", 0.018],
-    wrong: [120, 0.12, "sawtooth", 0.025],
-    success: [760, 0.18, "sine", 0.04]
-  };
-  const [freq, duration, wave, volume] = tones[type] || tones.shake;
   osc.type = wave;
-  osc.frequency.setValueAtTime(freq, now);
-  if (type === "success") osc.frequency.exponentialRampToValueAtTime(1180, now + duration);
-  gain.gain.setValueAtTime(0.0001, now);
-  gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
-  gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+  osc.frequency.setValueAtTime(freq, start);
+  if (endFreq) osc.frequency.exponentialRampToValueAtTime(Math.max(1, endFreq), start + duration);
+  gain.gain.setValueAtTime(0.0001, start);
+  gain.gain.exponentialRampToValueAtTime(volume, start + 0.008);
+  gain.gain.exponentialRampToValueAtTime(0.0001, start + duration);
   osc.connect(gain);
   gain.connect(ctx.destination);
-  osc.start(now);
-  osc.stop(now + duration + 0.02);
+  osc.start(start);
+  osc.stop(start + duration + 0.03);
 }
 
 startButton.addEventListener("click", startGame);

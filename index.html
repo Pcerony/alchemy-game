@@ -51,12 +51,25 @@
           </div>
           <div class="speech-bubble">
             <p class="goal" id="stageGoal"></p>
+            <p class="material-chip">いまの材料：<strong id="currentMaterial">古いスマホ</strong></p>
             <button class="hint-toggle" id="hintToggle" type="button" aria-expanded="false">ヒントを見る</button>
             <p class="hint-text" id="stageHint" hidden></p>
           </div>
         </section>
 
         <section class="lab-board" id="labBoard">
+          <div class="choices" id="choices" aria-label="アイテム選択"></div>
+
+          <section class="shake-panel" id="shakePanel" hidden>
+            <div class="shake-copy">
+              <p id="shakeInstruction">スマホを左右にシェイクしよう</p>
+              <span id="shakeMode">手でふるか、下のボタンを押してね</span>
+            </div>
+            <div class="shake-meter" aria-label="反応の進みぐあい">
+              <div class="shake-fill" id="shakeFill"></div>
+            </div>
+          </section>
+
           <div class="tube-zone" id="tubeDropZone">
             <div class="reaction-label" id="tubeLabel">古いスマホ</div>
             <div class="magnet-rail" id="magnetRail" aria-hidden="true">
@@ -71,19 +84,6 @@
               <div class="physics-layer" id="physicsLayer"></div>
               <div class="tube-particles" id="tubeParticles"></div>
             </div>
-            <p class="drop-help" id="dropHelp">えらんだアイテムを試験管へ</p>
-          </div>
-
-          <div class="choices" id="choices" aria-label="アイテム選択"></div>
-        </section>
-
-        <section class="shake-panel" id="shakePanel" hidden>
-          <div class="shake-copy">
-            <p id="shakeInstruction">スマホを左右にシェイクしよう</p>
-            <span id="shakeMode">手でふるか、下のボタンを押してね</span>
-          </div>
-          <div class="shake-meter" aria-label="反応の進みぐあい">
-            <div class="shake-fill" id="shakeFill"></div>
           </div>
         </section>
       </section>
