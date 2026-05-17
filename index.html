@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff7d7" />
+    <title>ちいさな錬金術師</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell" data-view="start">
+      <section class="start-screen" id="startScreen" aria-labelledby="gameTitle">
+        <div class="lab-sky" aria-hidden="true">
+          <div class="shelf shelf-a"></div>
+          <div class="shelf shelf-b"></div>
+          <div class="gold-spark spark-a"></div>
+          <div class="gold-spark spark-b"></div>
+          <div class="gold-spark spark-c"></div>
+        </div>
+        <div class="brand-mark" aria-hidden="true">
+          <div class="mini-phone"></div>
+          <div class="mini-tube"></div>
+          <div class="mini-gold"></div>
+        </div>
+        <h1 id="gameTitle">ちいさな錬金術師</h1>
+        <p class="tagline">古いスマホの中にかくれた金を、科学の手順でさがしてみよう。</p>
+        <button class="primary-button" id="startButton" type="button">けんきゅうをはじめる</button>
+        <p class="safety-note">これは安全なシミュレーションです。薬品や火をおうちでまねしないでね。</p>
+      </section>
+
+      <section class="game-screen" id="gameScreen" aria-live="polite">
+        <header class="top-bar">
+          <div>
+            <p class="eyebrow" id="stageStep">ステップ 1 / 6</p>
+            <h2 id="stageTitle">バキバキ分解</h2>
+          </div>
+          <button class="ghost-button" id="restartButton" type="button" aria-label="はじめから">↺</button>
+        </header>
+
+        <div class="progress-strip" id="progressStrip" aria-label="ゲームの進みぐあい"></div>
+
+        <section class="doctor-panel">
+          <div class="doctor-avatar" id="doctorAvatar" aria-hidden="true">
+            <div class="doctor-hair"></div>
+            <div class="doctor-face">
+              <span class="eye eye-left"></span>
+              <span class="eye eye-right"></span>
+              <span class="mouth"></span>
+            </div>
+            <div class="doctor-coat"></div>
+          </div>
+          <div class="speech-bubble">
+            <p class="goal" id="stageGoal"></p>
+            <p id="stageHint"></p>
+          </div>
+        </section>
+
+        <section class="lab-board" id="labBoard">
+          <div class="tube-zone" id="tubeDropZone">
+            <div class="reaction-label" id="tubeLabel">古いスマホ</div>
+            <div class="magnet-rail" id="magnetRail" aria-hidden="true">
+              <span>N</span>
+              <span>S</span>
+            </div>
+            <div class="flame-ring" id="flameRing" aria-hidden="true"></div>
+            <div class="test-tube" id="testTube" aria-label="試験管">
+              <div class="tube-glass"></div>
+              <div class="tube-liquid" id="tubeLiquid"></div>
+              <div class="tube-content" id="tubeContent"></div>
+              <div class="tube-particles" id="tubeParticles"></div>
+            </div>
+            <p class="drop-help" id="dropHelp">えらんだアイテムを試験管へ</p>
+          </div>
+
+          <div class="choices" id="choices" aria-label="アイテム選択"></div>
+        </section>
+
+        <section class="shake-panel" id="shakePanel" hidden>
+          <div class="shake-copy">
+            <p id="shakeInstruction">スマホを左右にシェイクしよう</p>
+            <span id="shakeMode">手でふるか、下のボタンを押してね</span>
+          </div>
+          <div class="shake-meter" aria-label="反応の進みぐあい">
+            <div class="shake-fill" id="shakeFill"></div>
+          </div>
+          <div class="shake-actions">
+            <button class="secondary-button" id="motionButton" type="button">スマホの動きを使う</button>
+            <button class="primary-button compact" id="manualShakeButton" type="button">シェイク</button>
+          </div>
+        </section>
+      </section>
+
+      <section class="clear-screen" id="clearScreen" hidden>
+        <div class="scale-scene" aria-hidden="true">
+          <div class="scale-top"></div>
+          <div class="scale-arm"></div>
+          <div class="scale-pan pan-left"></div>
+          <div class="scale-pan pan-right">
+            <span class="final-nugget"></span>
+          </div>
+          <div class="scale-base"></div>
+        </div>
+        <p class="eyebrow">けんきゅうせいこう</p>
+        <h2>おめでとう！ちいさな錬金術師！</h2>
+        <p>古いスマホから <strong>0.03グラム</strong> の金を取り出すことができたよ。</p>
+        <div class="reward-card">
+          <span class="badge-art" aria-hidden="true"></span>
+          <div>
+            <h3>都市鉱山ジュニアガード</h3>
+            <p>古いスマホはゴミ箱ではなく、リサイクルへ。小さな金属も大切な資源だよ。</p>
+          </div>
+        </div>
+        <p class="compare-copy">これはオリンピックの金メダル約 1/1000 個分。スマホ 7000 台なら、約 200 グラムの金になるかも。</p>
+        <button class="primary-button" id="playAgainButton" type="button">もういちどあそぶ</button>
+      </section>
+    </main>
+
+    <dialog class="modal" id="messageModal">
+      <div class="modal-card">
+        <p class="modal-kicker" id="modalKicker">博士のメモ</p>
+        <h2 id="modalTitle">大成功！</h2>
+        <p id="modalText"></p>
+        <button class="primary-button" id="modalButton" type="button">つぎへ</button>
+      </div>
+    </dialog>
+
+    <script src="./game.js"></script>
+  </body>
+</html>
