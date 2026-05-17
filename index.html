@@ -51,7 +51,8 @@
           </div>
           <div class="speech-bubble">
             <p class="goal" id="stageGoal"></p>
-            <p id="stageHint"></p>
+            <button class="hint-toggle" id="hintToggle" type="button" aria-expanded="false">ヒントを見る</button>
+            <p class="hint-text" id="stageHint" hidden></p>
           </div>
         </section>
 
@@ -67,6 +68,7 @@
               <div class="tube-glass"></div>
               <div class="tube-liquid" id="tubeLiquid"></div>
               <div class="tube-content" id="tubeContent"></div>
+              <div class="physics-layer" id="physicsLayer"></div>
               <div class="tube-particles" id="tubeParticles"></div>
             </div>
             <p class="drop-help" id="dropHelp">えらんだアイテムを試験管へ</p>
@@ -82,10 +84,6 @@
           </div>
           <div class="shake-meter" aria-label="反応の進みぐあい">
             <div class="shake-fill" id="shakeFill"></div>
-          </div>
-          <div class="shake-actions">
-            <button class="secondary-button" id="motionButton" type="button">スマホの動きを使う</button>
-            <button class="primary-button compact" id="manualShakeButton" type="button">シェイク</button>
           </div>
         </section>
       </section>
@@ -119,6 +117,10 @@
       <div class="modal-card">
         <p class="modal-kicker" id="modalKicker">博士のメモ</p>
         <h2 id="modalTitle">大成功！</h2>
+        <div class="result-preview" id="resultPreview" hidden>
+          <span class="result-art" id="resultArt" aria-hidden="true"></span>
+          <strong id="resultName"></strong>
+        </div>
         <p id="modalText"></p>
         <button class="primary-button" id="modalButton" type="button">つぎへ</button>
       </div>
